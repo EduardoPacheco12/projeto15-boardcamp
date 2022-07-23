@@ -1,5 +1,35 @@
 import connection from "../dbStrategy/postgres.js";
 
+export async function getGames(req, res) {
+    let { name } = req.query;
+    if(name) {
+        name = name.toLowerCase();
+        name = `${name}%`;
+        const { rows: game } = await connection.query(`
+            SELECT games.*, categories.name as "categoryName" 
+            FROM games
+            JOIN categories 
+            ON games."categoryId" = categories.id
+            WHERE lower(games.name) LIKE $1
+        `, [name]);
+
+        return res.send(game);
+    }
+
+    try {
+        const { rows: games } = await connection.query(`
+            SELECT games.*, categories.name as "categoryName" 
+            FROM games
+            JOIN categories 
+            ON games."categoryId" = categories.id
+        `);
+        
+        res.send(games);
+    } catch (error) {
+        res.status(500).send(error);
+    }
+}
+
 export async function postGame(req, res) {
     try {
         const game = req.body;
