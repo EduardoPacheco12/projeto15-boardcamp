@@ -1,7 +1,7 @@
 import gameSchema from "../schemas/gameSchema.js";
 import connection from "../dbStrategy/postgres.js";
 
-export async function validatePostGame(req, res, next) {
+export async function validateGame(req, res, next) {
     const game = req.body;
 
     const { error } = gameSchema.validate(game, { abortEarly: false });

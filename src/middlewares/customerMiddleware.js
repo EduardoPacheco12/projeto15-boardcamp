@@ -1,7 +1,7 @@
 import customerSchema from "../schemas/customerSchema.js";
 import connection from "../dbStrategy/postgres.js";
 
-export async function validatePostCustomer(req, res, next) {
+export async function validateCustomer(req, res, next) {
     const customer = req.body;
     
     const { error } = customerSchema.validate(customer, { abortEarly: false });
