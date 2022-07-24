@@ -3,6 +3,7 @@ import connection from "../dbStrategy/postgres.js";
 
 export async function validatePostCustomer(req, res, next) {
     const customer = req.body;
+    
     const { error } = customerSchema.validate(customer, { abortEarly: false });
     if (error) {
         return res.sendStatus(400);

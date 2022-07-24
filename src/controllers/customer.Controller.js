@@ -10,7 +10,7 @@ export async function getCustomers(req, res) {
     }
 
     try {
-        const { rows: customers } = await connection.query('SELECT *, birthday::VARCHAR from customers');
+        const { rows: customers } = await connection.query('SELECT *, birthday::VARCHAR FROM customers');
         res.send(customers);
     } catch (error) {
         res.status(500).send(error);
@@ -18,12 +18,23 @@ export async function getCustomers(req, res) {
 }
 
 export async function getCustomer(req, res) {
+    const { id } = req.params;
 
+    try {
+        const { rows: customer } = await connection.query('SELECT * FROM customers WHERE id = $1', [id])
+        if(!customer[0]) {
+            return res.sendStatus(404);
+        }
+        
+        res.send(customer);
+    } catch (error) {
+        return res.status(500).send(error);
+    }
 }
 
 export async function postCustomer(req, res) {
+    const customer = req.body;
     try {
-        const customer = req.body;
         await connection.query('INSERT INTO customers (name, phone, cpf, birthday) VALUES ($1, $2, $3, $4)', [customer.name, customer.phone, customer.cpf, customer.birthday]);
         res.sendStatus(201);
     } catch (error) {
