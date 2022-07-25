@@ -14,7 +14,6 @@ export async function getRentals(req, res) {
     if( gameId && customerId ) {
         query = `WHERE rentals."gameId" = ${gameId} and rentals."customerId" = ${customerId}`;
     }
-    console.log(query);
     try {
         const { rows: rentals } = await connection.query(`
             SELECT 
@@ -40,7 +39,6 @@ export async function getRentals(req, res) {
         `);
         res.send(rentals);
     } catch (error) {
-        console.log(error);
         res.status(500).send(error);
     }
 }
@@ -60,6 +58,26 @@ export async function postRental(req, res) {
         }
         await connection.query('INSERT INTO rentals ("customerId", "gameId", "rentDate", "daysRented", "returnDate", "originalPrice", "delayFee") VALUES ($1, $2, $3, $4, $5, $6, $7)',[postRental.customerId, postRental.gameId, postRental.rentDate, postRental.daysRented, postRental.returnDate, postRental.originalPrice, postRental.delayFee]);
         res.sendStatus(201);
+    } catch (error) {
+        res.status(500).send(error);
+    }
+}
+
+export async function finishRental(req, res) {
+    const { id } = req.params
+    try {
+        let delayFee = 0;
+        const today = dayjs();
+        const { rows: rental } = await connection.query('SELECT * FROM rentals WHERE id = $1', [id]);
+        const rentalDate = dayjs(rental[0].rentDate).add(rental[0].daysRented, 'day');
+        const date = today.diff(rentalDate, 'days');
+        if(date > 0) {
+            delayFee = date * (rental[0].originalPrice / rental[0].daysRented)
+        }
+        
+        await connection.query('UPDATE rentals SET ("returnDate", "delayFee") = ($1, $2) WHERE id = $3', [today, delayFee, id])
+
+        res.sendStatus(200);
     } catch (error) {
         res.status(500).send(error);
     }

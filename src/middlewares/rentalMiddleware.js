@@ -18,3 +18,18 @@ export async function validateRental(req, res, next) {
     
     next();
 }
+
+export async function validateFinishRental(req, res, next) {
+    const { id } = req.params;
+
+    const { rows: verifyRental } = await connection.query('SELECT * FROM rentals WHERE id = $1', [id])
+    if(!verifyRental[0]) {
+        return res.sendStatus(404);
+    }
+
+    if(verifyRental[0].returnDate !== null) {
+        return res.sendStatus(400);
+    }
+
+    next();
+}
